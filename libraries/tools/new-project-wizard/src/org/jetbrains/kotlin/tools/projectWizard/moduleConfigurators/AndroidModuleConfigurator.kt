@@ -18,6 +18,7 @@ import org.jetbrains.kotlin.tools.projectWizard.core.service.WizardKotlinVersion
 import org.jetbrains.kotlin.tools.projectWizard.ir.buildsystem.*
 import org.jetbrains.kotlin.tools.projectWizard.ir.buildsystem.gradle.AndroidConfigIR
 import org.jetbrains.kotlin.tools.projectWizard.library.MavenArtifact
+import org.jetbrains.kotlin.tools.projectWizard.moduleConfigurators.ModuleConfiguratorWithTests.Companion.testFramework
 import org.jetbrains.kotlin.tools.projectWizard.phases.GenerationPhase
 import org.jetbrains.kotlin.tools.projectWizard.plugins.AndroidPlugin
 import org.jetbrains.kotlin.tools.projectWizard.plugins.kotlin.KotlinPlugin
@@ -36,7 +37,7 @@ import org.jetbrains.kotlin.tools.projectWizard.templates.FileTemplateDescriptor
 import java.nio.file.Path
 
 interface AndroidModuleConfigurator : ModuleConfigurator,
-    ModuleConfiguratorWithSettings,
+    ModuleConfiguratorWithTests,
     ModuleConfiguratorWithModuleType,
     GradleModuleConfigurator {
 
@@ -92,6 +93,7 @@ interface AndroidModuleConfigurator : ModuleConfigurator,
         module: Module
     ): List<BuildSystemIR> =
         buildList {
+            +super<ModuleConfiguratorWithTests>.createModuleIRs(reader, configurationData, module)
             +ArtifactBasedLibraryDependencyIR(
                 MavenArtifact(DefaultRepository.GOOGLE, "androidx.core", "core-ktx"),
                 version = Versions.ANDROID.ANDROIDX_CORE_KTX,
@@ -154,6 +156,7 @@ object AndroidTargetConfigurator : TargetConfigurator,
     override fun getConfiguratorSettings() = buildList<ModuleConfiguratorSetting<*, *>> {
         +super.getConfiguratorSettings()
         +androidPlugin
+        +testFramework
     }
 
     override fun Writer.runArbitraryTask(
@@ -180,6 +183,8 @@ object AndroidTargetConfigurator : TargetConfigurator,
             )
         )
     }
+
+    override fun defaultTestFramework(): KotlinTestFramework = KotlinTestFramework.JUNIT4
 
     override fun createModuleIRs(reader: Reader, configurationData: ModulesToIrConversionData, module: Module): List<BuildSystemIR> =
         buildList {

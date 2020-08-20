@@ -68,6 +68,9 @@ object AndroidSinglePlatformModuleConfigurator :
             priority = 2
         )
 
+
+    override fun defaultTestFramework(): KotlinTestFramework = KotlinTestFramework.JUNIT4
+
     override fun createModuleIRs(
         reader: Reader,
         configurationData: ModulesToIrConversionData,
